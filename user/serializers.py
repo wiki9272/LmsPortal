@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Project
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -9,7 +9,7 @@ import os
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','email','name','password','role','developer_type']
+        fields = ['id','email','name','password','role','job']
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
@@ -54,3 +54,13 @@ class PassResetEmailSerializer(serializers.Serializer):
             User.objects.get(email=email)
 
         return super().validate(attrs)
+    
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = [ 'description']
+    # name = serializers.CharField(max_length=200)
+    # description = serializers.CharField()
+    # deadline = serializers.DateField()
+    # assigned_to = serializers.EmailField()
+    # assigned_to = serializers.EmailField()

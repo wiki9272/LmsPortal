@@ -2,17 +2,17 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, name,role,developer_type='none', password=None):
+    def create_user(self, email, name,role,job='none', password=None):
         if not email:
             raise ValueError("Users must have an email address")
         dev_type = 'none'
         if role == 'developer':
-            dev_type = developer_type
+            dev_type = job
         user = self.model(
             email=self.normalize_email(email),
             name=name,
             role=role,
-            developer_type = dev_type
+            job = dev_type
         )
         user.set_password(password)
         user.save(using=self._db)
@@ -25,7 +25,7 @@ class MyUserManager(BaseUserManager):
             name=name,
             role=role,
             password=password,
-            developer_type='none'
+            job='none'
         )
         user.is_active = True
         user.save(using=self._db)
@@ -48,12 +48,13 @@ class User(AbstractBaseUser):
         verbose_name="email",
         max_length=255,
         unique=True,
+        primary_key=True
     )
     name = models.CharField(max_length=200)
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    developer_type = models.CharField(max_length=20, choices=DEV_CHOICES, default='None')
+    job = models.CharField(max_length=20, choices=DEV_CHOICES, default='None')
 
     
     objects = MyUserManager()
@@ -86,6 +87,16 @@ class User(AbstractBaseUser):
         # Simplest possible answer: Yes, always
         return True
 
+class Project(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    deadline = models.DateField(null=True, blank=True, editable=True,),
+    assigned_on = models.DateField(auto_now_add=True)
+    assigned_to = models.ManyToManyField(User,related_name='project', blank=True)
+    assigned_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="assigned_by", limit_choices_to={'role':'lead'})
+
+    def __str__(self):
+        return self.name
 
 # class Developer(models.Model):
 #     ROLE_CHOICES = (

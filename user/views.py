@@ -1,8 +1,8 @@
 from typing import Iterable
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import RegisterSerializer, LoginSerializer , UserSerializer , ChangePassSerializer
-from .models import User
+from .serializers import RegisterSerializer, ProjectSerializer, LoginSerializer , UserSerializer , ChangePassSerializer
+from .models import User, Project
 from django.contrib.auth import authenticate
 from .permissions import IsActive
 from rest_framework.permissions import IsAuthenticated
@@ -66,4 +66,11 @@ class ChangePassView(APIView):
             return Response({'msg':'password changed successfuly'},status=201)
         return Response({'error':serializer.errors},status=400)
         
-            
+
+class ProjectView(APIView):
+    def get(self, request):
+        projects = Project.objects.all()
+        print(projects)
+        serializer = ProjectSerializer(instance=projects)
+        print(serializer.data)
+        return Response({serializer.data}, status=200)
