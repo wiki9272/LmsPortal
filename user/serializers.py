@@ -58,7 +58,7 @@ class PassResetEmailSerializer(serializers.Serializer):
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = [ 'description']
+        fields = "__all__"
     # name = serializers.CharField(max_length=200)
     # description = serializers.CharField()
     # deadline = serializers.DateField()
