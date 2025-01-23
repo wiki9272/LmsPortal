@@ -27,9 +27,9 @@ class UserAdminn(BaseUserAdmin):
 
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ["name","description","deadline","assigned_by","assigned_on","assigned_by_id"]
-
-class ProjectAssignedAdmin(admin.ModelAdmin):
-    list_display = ['id','project_id','user_id']
+    
+# class ProjectAssignedAdmin(admin.ModelAdmin):
+#     list_display = ['id','project_id','user_id']
 
 # Now register the new UserAdmin...
 admin.site.register(User, UserAdminn)

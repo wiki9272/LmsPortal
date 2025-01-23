@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.utils.timezone import now
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email, name,role,job='none', password=None):
@@ -47,7 +48,8 @@ class User(AbstractBaseUser):
     email = models.EmailField(
         verbose_name="email",
         max_length=255,
-        unique=True
+        unique=True,
+        primary_key=True
     )
     name = models.CharField(max_length=200)
     is_active = models.BooleanField(default=False)
@@ -87,9 +89,9 @@ class User(AbstractBaseUser):
         return True
 
 class Project(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True, primary_key=True)
     description = models.TextField()
-    deadline = models.DateField(null=True, blank=True, editable=True,),
+    deadline = models.DateField(null=True, blank=True)
     assigned_on = models.DateField(auto_now_add=True)
     assigned_to = models.ManyToManyField(User,related_name='project', blank=True)
     assigned_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="assigned_by", limit_choices_to={'role':'lead'})

@@ -70,7 +70,11 @@ class ChangePassView(APIView):
 class ProjectView(APIView):
     def get(self, request):
         projects = Project.objects.all()
-        print(projects)
-        serializer = ProjectSerializer(instance=projects)
-        print(serializer.data)
-        return Response({serializer.data}, status=200)
+        serializer = ProjectSerializer(instance=projects, many=True)
+        return Response(serializer.data, status=200)
+    def post(self,request):
+        serializer = ProjectSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg':'Project Created!','project':serializer.data},status=201)
+        return Response({'error':serializer.errors},status=400)

@@ -9,7 +9,7 @@ import os
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','email','name','password','role','job']
+        fields = ['email','name','password','role','job']
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
@@ -59,6 +59,9 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = "__all__"
+    # def create(self, validated_data):
+    #     Project.objects.create(**validated_data)
+    #     return validated_data
     # name = serializers.CharField(max_length=200)
     # description = serializers.CharField()
     # deadline = serializers.DateField()
