@@ -28,7 +28,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ["name","description","deadline","assigned_by","assigned_on"]
     
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ["id","project_name","name","details","user","isCompleted","created_at","updated_at"]
+    list_display = ["id","project_name","name","details","user","isCompleted","created_at","updated_at","flag"]
 
 # Now register the new UserAdmin...
 

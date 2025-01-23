@@ -39,24 +39,14 @@ class LoginView(APIView):
         return Response({'error':serializer.errors}, status=400)
            
 class UserView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self,request):
-        paramId = request.query_params.get("id")
-        paramRole = request.query_params.get("role")
-        paramName = request.query_params.get("name")
-        if not paramId and not paramName and not paramRole:
-            users = User.objects.all()
-            serializer = UserSerializer(instance=users, many=True)
-            return Response({'data':serializer.data},status=200)
-        # if paramId:
-        #     users1 = User.objects.get(id=paramId)
-        #     serializer1 = UserSerializer(instance=users1)
-        #     return Response({'data':serializer1.data},status=200)
-        # if paramRole:
-        #     users2 = User.objects.get(role=paramRole)
-        #     print(isinstance(users2, Iterable))
-        #     # serializer2 = UserSerializer(instance=users2)
-        #     # return Response({'data':serializer2.data},status=200)
-        return Response({'msg':'not working yet for params'})
+        user = User.objects.get(email=request.user)
+        serializer = UserSerializer(instance=user)
+        if serializer.data:
+            return Response(serializer.data, status=200)
+        return Response({'msg':'no data found'}, status=404)
+        
 
 class ChangePassView(APIView):
     permission_classes = [IsAuthenticated]

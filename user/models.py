@@ -100,9 +100,16 @@ class Project(models.Model):
         return self.name
 
 class Task(models.Model):
+    FLAG_CHOICES = (
+        ('red', 'Red'),
+        ('yellow', 'Yellow'),
+        ('green','Green'),
+        ('none','None'),
+    )
     project_name = models.ForeignKey(Project,on_delete=models.CASCADE, related_name='task',blank=True)
     name = models.CharField(max_length=255)
     details = models.TextField()
+    flag = models.CharField(max_length=20, choices=FLAG_CHOICES, default='none')
     time_to_complete = models.DateTimeField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user', limit_choices_to={'role':'developer'})
     isCompleted = models.BooleanField(default=False)

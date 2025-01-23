@@ -59,11 +59,4 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = "__all__"
-    # def create(self, validated_data):
-    #     Project.objects.create(**validated_data)
-    #     return validated_data
-    # name = serializers.CharField(max_length=200)
-    # description = serializers.CharField()
-    # deadline = serializers.DateField()
-    # assigned_to = serializers.EmailField()
-    # assigned_to = serializers.EmailField()
+   
