@@ -68,13 +68,28 @@ class ChangePassView(APIView):
         
 
 class ProjectView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
-        projects = Project.objects.all()
-        serializer = ProjectSerializer(instance=projects, many=True)
-        return Response(serializer.data, status=200)
+        user = User.objects.get(email=request.user)
+        serializer = UserSerializer(instance=user)
+        role = serializer.data.get('role')
+        if role == 'developer':
+            projects = Project.objects.filter(assigned_to = request.user)
+            serializer = ProjectSerializer(instance=projects, many=True)
+            return Response(serializer.data, status=200)
+        if role == 'lead':
+            projects = Project.objects.filter(assigned_by = request.user)
+            serializer = ProjectSerializer(instance=projects, many=True)
+            return Response(serializer.data, status=200)
+        return Response({'msg':'something went wrong','error':serializer.errors}, status=400)
     def post(self,request):
-        serializer = ProjectSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'msg':'Project Created!','project':serializer.data},status=201)
-        return Response({'error':serializer.errors},status=400)
+        user = User.objects.get(email=request.user)
+        serializer = UserSerializer(instance=user)
+        role = serializer.data.get('role')
+        if role == 'lead':
+            serializer = ProjectSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'msg':'Project Created!','project':serializer.data},status=201)
+            return Response({'error':serializer.errors},status=400)
+        return Response({'error':'only lead can create project'}, status=400)
