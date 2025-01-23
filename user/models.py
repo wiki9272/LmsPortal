@@ -91,34 +91,23 @@ class User(AbstractBaseUser):
 class Project(models.Model):
     name = models.CharField(max_length=255, unique=True, primary_key=True)
     description = models.TextField()
-    deadline = models.DateField(null=True, blank=True)
-    assigned_on = models.DateField(auto_now_add=True)
-    assigned_to = models.ManyToManyField(User,related_name='project', blank=True)
+    deadline = models.DateTimeField(null=True, blank=True)
+    assigned_on = models.DateTimeField(auto_now_add=True)
+    assigned_to = models.ManyToManyField(User,related_name='project', blank=True, limit_choices_to={'role':'developer'})
     assigned_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="assigned_by", limit_choices_to={'role':'lead'})
 
     def __str__(self):
         return self.name
 
-# class Developer(models.Model):
-#     ROLE_CHOICES = (
-#         ('frontend', 'Frontend'),
-#         ('backend', 'Backend'),
-#         ('qa','QA')
-#     )
-#     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
-#     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='developer_profile')
-#     assigned_projects = models.ManyToManyField('Project', related_name='projects', blank=True)
-    
-#     def __str__(self):
-#         return "Developer: {self.user.username}"
-    
-#     # Project model
-# class Project(models.Model):
-#     name = models.CharField(max_length=255)
-#     description = models.TextField()
-#     deadline = models.DateField(),
-#     assigned_to = models.ManyToManyField('Developer',related_name='developers', blank=True)
+class Task(models.Model):
+    project_name = models.ForeignKey(Project,on_delete=models.CASCADE, related_name='task',blank=True)
+    name = models.CharField(max_length=255)
+    details = models.TextField()
+    time_to_complete = models.DateTimeField(null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user', limit_choices_to={'role':'developer'})
+    isCompleted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-#     def __str__(self):
-#         return self.name
-    
+    def __str__(self):
+        return self.name

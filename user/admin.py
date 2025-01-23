@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Project
-from django.contrib.auth.models import PermissionsMixin
+from .models import User, Project , Task
 
 
 class UserAdminn(BaseUserAdmin):
@@ -26,11 +25,13 @@ class UserAdminn(BaseUserAdmin):
     filter_horizontal = []
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ["name","description","deadline","assigned_by","assigned_on","assigned_by_id"]
+    list_display = ["name","description","deadline","assigned_by","assigned_on"]
     
-# class ProjectAssignedAdmin(admin.ModelAdmin):
-#     list_display = ['id','project_id','user_id']
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ["id","project_name","name","details","user","isCompleted","created_at","updated_at"]
 
 # Now register the new UserAdmin...
+
 admin.site.register(User, UserAdminn)
 admin.site.register(Project,ProjectAdmin)
+admin.site.register(Task,TaskAdmin)
