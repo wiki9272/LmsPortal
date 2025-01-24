@@ -1,8 +1,8 @@
 from typing import Iterable
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import UserPasswordResetSerializer, PassResetEmailSerializer, RegisterSerializer, ProjectSerializer, LoginSerializer , UserSerializer , ChangePassSerializer
-from .models import User, Project
+from .serializers import TaskSerializer, UserPasswordResetSerializer, PassResetEmailSerializer, RegisterSerializer, ProjectSerializer, LoginSerializer , UserSerializer , ChangePassSerializer
+from .models import User, Project, Task
 from django.contrib.auth import authenticate
 from .permissions import IsActive
 from rest_framework.permissions import IsAuthenticated
@@ -63,6 +63,13 @@ class PassResetEmailView(APIView):
                 return Response({'msg':'Password reset email send, please check your email', 'link':serializer.validated_data}, status=200)
             return Response(serializer.errors, status=400)   
 
+class UserPasswordResetView(APIView):
+    def post(self, request,uid,token):
+        serializer=UserPasswordResetSerializer(data=request.data,context={'uid':uid,'token':token})
+        if serializer.is_valid(raise_exception=True):
+            return Response({'msg':'password reset successfully'},status=200)
+        return Response(serializer.errors,status=400)
+
 class ProjectView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -91,10 +98,16 @@ class ProjectView(APIView):
             return Response({'error':serializer.errors},status=400)
         return Response({'error':'only lead can create project'}, status=400)
 
+class TaskView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        user = User.objects.get(email=request.user)
+        serializer = UserSerializer(instance=user)
+        role = serializer.data.get('role')
+        if role == 'developer':
+            tasks = Task.objects.filter(user = request.user)
+            serializer = TaskSerializer(instance=tasks, many=True)
+            return Response(serializer.data,status=200)
+        return Response({'msg':'only developer can create tasks'},status=400)
 
-class UserPasswordResetView(APIView):
-    def post(self, request,uid,token):
-        serializer=UserPasswordResetSerializer(data=request.data,context={'uid':uid,'token':token})
-        if serializer.is_valid(raise_exception=True):
-            return Response({'msg':'password reset successfully'},status=200)
-        return Response(serializer.errors,status=400)
+
