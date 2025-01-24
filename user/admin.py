@@ -4,7 +4,11 @@ from .models import User, Project , Task
 
 
 class UserAdminn(BaseUserAdmin):
-    list_display = ["email", "name","role","is_active","job",]
+    list_display = ["email", "name","role","is_active","job"]
+    # def display_project_assigned(self, obj):
+    #     return ", ".join([project.name for project in obj.projects_assigned.all()])
+    
+    # display_project_assigned.short_description = 'Projects Assigned'
     list_filter = ["role","is_active"]
     fieldsets = [
         ("Credentials", {"fields": ["email", "password"]}),
@@ -25,7 +29,12 @@ class UserAdminn(BaseUserAdmin):
     filter_horizontal = []
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ["name","description","deadline","assigned_by","assigned_on"]
+    list_display = ["name","description","deadline","assigned_by","assigned_on","display_assigned"]
+
+    def display_assigned(self, obj):
+        return ", ".join([user.name for user in obj.assigned_to.all()])
+    
+    display_assigned.short_description = 'Assigned To'
     
 class TaskAdmin(admin.ModelAdmin):
     list_display = ["id","project_name","name","details","user","isCompleted","created_at","updated_at","flag"]

@@ -38,7 +38,7 @@ class ChangePassSerializer(serializers.Serializer):
         if password != password2:
             raise serializers.ValidationError("password and congirm password does not match")
         user.set_password(password)
-        user.is_active = False
+        # user.is_active = False
         user.save()
         return attrs
 
@@ -50,11 +50,51 @@ class PassResetEmailSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         email = attrs.get('email')
+        print(email)
         if User.objects.filter(email=email).exists():
-            User.objects.get(email=email)
+            user = User.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.email))
+            print('encoded uemail', uid)
+            token = PasswordResetTokenGenerator().make_token(user)
+            print('password reset token', token)
+            link = 'http://localhost:3000/users/reset/'+uid+'/'+token
+            print('password reset link',link)
+            body = 'Click following link to reset your password '+link
+            data ={
+                'subject': 'Reset Your password',
+                'body':body,
+                'to_email': user.email
+            }
+            # print(os.environ.get('USER_EMAIL'))
+            # Util.send_email(data)
+            return link
+        else:
+            raise serializers.ValidationError('You are not a registered user')
 
-        return super().validate(attrs)
-    
+class UserPasswordResetSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=255, style = {'input_type':'password'},write_only=True)
+    password2 = serializers.CharField(max_length=255, style = {'input_type':'password'},write_only=True)
+    class Meta:
+        fields=['password','password2']
+    def validate(self, attrs):
+       try:
+        password = attrs.get('password')
+        password2 = attrs.get('password2')
+        uid = self.context.get('uid')
+        token = self.context.get('token')
+        if password != password2:
+            raise serializers.ValidationError("password and confirm password does not match")
+        id=smart_str(urlsafe_base64_decode(uid))
+        user=User.objects.get(email=id)
+        if not PasswordResetTokenGenerator().check_token(user,token):
+            raise serializers.ValidationError('Token is not valid or expired')
+        user.set_password(password)
+        user.save()
+        return attrs
+       except DjangoUnicodeDecodeError as identifier:
+        PasswordResetTokenGenerator().check_token(user,token)
+        raise serializers.ValidationError('token is not valid or expired')
+
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
