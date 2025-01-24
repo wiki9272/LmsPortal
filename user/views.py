@@ -73,7 +73,7 @@ class ProjectView(APIView):
         if role == 'developer':
             projects = Project.objects.filter(assigned_to = request.user)
             serializer = ProjectSerializer(instance=projects, many=True)
-            return Response(serializer.data, status=200)
+            return Response({'user_name':name,'user_role':role,'data':serializer.data}, status=200)
         if role == 'lead':
             projects = Project.objects.filter(assigned_by = request.user)
             serializer = ProjectSerializer(instance=projects, many=True)
