@@ -10,7 +10,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
-
     return {
         'refresh': str(refresh),
         'access': str(refresh.access_token),
@@ -79,6 +78,7 @@ class ProjectView(APIView):
         role = serializer.data.get('role')
         name = serializer.data.get('name')
         email = serializer.data.get('email')
+        print(email)
         if role == 'developer':
             projects = Project.objects.filter(assigned_to = request.user)
             if search is not None:
@@ -94,7 +94,7 @@ class ProjectView(APIView):
                 serializer = ProjectSerializer(instance=filteredProjects, many=True)
                 return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data},status=200)
             serializer = ProjectSerializer(instance=projects, many=True)
-            return Response({'user_name':name,'user_role':role,'data':serializer.data}, status=200)
+            return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data}, status=200)
         return Response({'user_email':email,'msg':'something went wrong','error':serializer.errors}, status=400)
     def post(self,request):
         user = User.objects.get(email=request.user)
@@ -111,11 +111,16 @@ class ProjectView(APIView):
 class TaskView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):
+        project = request.query_params.get('project')
         user = User.objects.get(email=request.user)
         serializer = UserSerializer(instance=user)
         role = serializer.data.get('role')
         if role == 'developer':
             tasks = Task.objects.filter(user = request.user)
+            if project is not None:
+                filteredTasks = tasks.filter(project_name=project)
+                serializer = TaskSerializer(instance=filteredTasks, many=True)
+                return Response(serializer.data, status=200)
             serializer = TaskSerializer(instance=tasks, many=True)
             return Response(serializer.data,status=200)
         return Response({'msg':'only developer can view tasks'},status=400)
@@ -130,4 +135,3 @@ class TaskView(APIView):
                 serializer.save()
                 return Response({'msg':'Task created','data':serializer.data},status=201)
             return Response(serializer.errors, status=400)
-
