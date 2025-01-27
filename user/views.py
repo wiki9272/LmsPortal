@@ -95,7 +95,7 @@ class ProjectView(APIView):
                 return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data},status=200)
             serializer = ProjectSerializer(instance=projects, many=True)
             return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data}, status=200)
-        return Response({'user_email':email,'msg':'something went wrong','error':serializer.errors}, status=400)
+        return Response({'msg':'something went wrong','error':serializer.errors}, status=400)
     def post(self,request):
         user = User.objects.get(email=request.user)
         serializer = UserSerializer(instance=user)
@@ -135,3 +135,4 @@ class TaskView(APIView):
                 serializer.save()
                 return Response({'msg':'Task created','data':serializer.data},status=201)
             return Response(serializer.errors, status=400)
+        return Response({'msg':'lead cannot add tasks'},status=400)
