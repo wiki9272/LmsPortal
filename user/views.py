@@ -77,15 +77,16 @@ class ProjectView(APIView):
         serializer = UserSerializer(instance=user)
         role = serializer.data.get('role')
         name = serializer.data.get('name')
+        email = serializer.data.get('email')
         if role == 'developer':
             projects = Project.objects.filter(assigned_to = request.user)
             serializer = ProjectSerializer(instance=projects, many=True)
-            return Response({'user_name':name,'user_role':role,'data':serializer.data}, status=200)
+            return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data}, status=200)
         if role == 'lead':
             projects = Project.objects.filter(assigned_by = request.user)
             serializer = ProjectSerializer(instance=projects, many=True)
             return Response({'user_name':name,'user_role':role,'data':serializer.data}, status=200)
-        return Response({'msg':'something went wrong','error':serializer.errors}, status=400)
+        return Response({'user_email':email,'msg':'something went wrong','error':serializer.errors}, status=400)
     def post(self,request):
         user = User.objects.get(email=request.user)
         serializer = UserSerializer(instance=user)
