@@ -108,6 +108,16 @@ class TaskView(APIView):
             tasks = Task.objects.filter(user = request.user)
             serializer = TaskSerializer(instance=tasks, many=True)
             return Response(serializer.data,status=200)
-        return Response({'msg':'only developer can create tasks'},status=400)
-
+        return Response({'msg':'only developer can view tasks'},status=400)
+    
+    def post(self,request):
+        user = User.objects.get(email=request.user)
+        serializer = UserSerializer(instance=user)
+        role = serializer.data.get('role')
+        if role == 'developer':
+            serializer = TaskSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'msg':'Task created','data':serializer.data},status=201)
+            return Response(serializer.errors, status=400)
 
