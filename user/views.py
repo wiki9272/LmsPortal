@@ -73,6 +73,7 @@ class UserPasswordResetView(APIView):
 class ProjectView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
+        search = request.query_params.get('search')
         user = User.objects.get(email=request.user)
         serializer = UserSerializer(instance=user)
         role = serializer.data.get('role')
@@ -80,10 +81,18 @@ class ProjectView(APIView):
         email = serializer.data.get('email')
         if role == 'developer':
             projects = Project.objects.filter(assigned_to = request.user)
+            if search is not None:
+                filteredProjects = projects.filter(name = search)
+                serializer = ProjectSerializer(instance=filteredProjects, many=True)
+                return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data},status=200)
             serializer = ProjectSerializer(instance=projects, many=True)
             return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data}, status=200)
         if role == 'lead':
             projects = Project.objects.filter(assigned_by = request.user)
+            if search is not None:
+                filteredProjects = projects.filter(name = search)
+                serializer = ProjectSerializer(instance=filteredProjects, many=True)
+                return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data},status=200)
             serializer = ProjectSerializer(instance=projects, many=True)
             return Response({'user_name':name,'user_role':role,'data':serializer.data}, status=200)
         return Response({'user_email':email,'msg':'something went wrong','error':serializer.errors}, status=400)
