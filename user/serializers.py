@@ -104,3 +104,13 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = "__all__"
+
+    # def update(self, instance, validated_data):
+    #     instance.name = validated_data.get("name", instance.name)
+    #     instance.details = validated_data.get("details", instance.details)
+    #     instance.flag = validated_data.get("flag", instance.flag)
+    #     instance.isCompleted = validated_data.get("isCompleted", instance.isCompleted)
+    #     instance.time_to_complete = validated_data.get("time_to_complete", instance.time_to_complete)
+    #     instance.save()
+    #     return instance
+    

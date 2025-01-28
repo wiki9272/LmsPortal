@@ -136,3 +136,28 @@ class TaskView(APIView):
                 return Response({'msg':'Task created','data':serializer.data},status=201)
             return Response(serializer.errors, status=400)
         return Response({'msg':'lead cannot add tasks'},status=400)
+
+    def patch(self,request):
+        user = User.objects.get(email=request.user)
+        serializer = UserSerializer(instance=user)
+        role = serializer.data.get('role')
+        if role == 'developer':
+            param = request.query_params.get('id')
+            if not param:
+                return Response({"message": "Please provide a task ID."}, status=400)
+            task = Task.objects.get(id=param)
+            serializer = TaskSerializer(instance=task,data=request.data,partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data,status=200)
+            return Response({'error':'data is not in valid format','details':serializer.errors},status=400)
+        return Response({'msg':'only developer can update task'},status=403)
+    
+    def delete(self, request):
+        param = request.query_params.get("id")
+        if not param:
+            return Response({"message": "Please provide a task id."}, status=400)
+        task = Task.objects.get(id=param)
+        task.delete()
+        return Response({"message": "Task deleted successfully."}, status=204)
+    
