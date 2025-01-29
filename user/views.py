@@ -8,6 +8,7 @@ from .permissions import IsActive
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 # Ali haider'
+#waqar
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     return {
