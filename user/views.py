@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from .permissions import IsActive
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-
+# waqar
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     return {
