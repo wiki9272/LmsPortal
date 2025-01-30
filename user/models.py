@@ -88,9 +88,27 @@ class User(AbstractBaseUser):
         # Simplest possible answer: Yes, always
         return True
 
+class Client(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField(
+        verbose_name="email",
+        max_length=255,
+        unique=True,
+        primary_key=True
+    )
+    details = models.TextField()
+
 class Project(models.Model):
+    STATUS_CHOICES = (
+        ('completed', 'Completed'),
+        ('pending', 'Pending'),
+        ('in progress','In Progress'),
+    )
     name = models.CharField(max_length=255, unique=True, primary_key=True)
     description = models.TextField()
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client', null=True)
+    paid = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     deadline = models.DateTimeField(null=True, blank=True)
     assigned_on = models.DateTimeField(auto_now_add=True)
     assigned_to = models.ManyToManyField(User,related_name='project', blank=True, limit_choices_to={'role':'developer'})
@@ -118,3 +136,4 @@ class Task(models.Model):
 
     def __str__(self):
         return self.name
+    
