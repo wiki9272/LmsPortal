@@ -96,7 +96,16 @@ class ProjectView(APIView):
                 return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data},status=200)
             serializer = ProjectSerializer(instance=projects, many=True)
             return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data}, status=200)
+        if role == 'admin':
+            projects = Project.objects.all()
+            if search is not None:
+                filteredProjects = projects.filter(name = search)
+                serializer = ProjectSerializer(instance=filteredProjects, many=True)
+                return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data},status=200)
+            serializer = ProjectSerializer(instance=projects, many=True)
+            return Response({'user_email':email,'user_name':name,'user_role':role,'data':serializer.data}, status=200)
         return Response({'msg':'something went wrong','error':serializer.errors}, status=400)
+    
     def post(self,request):
         user = User.objects.get(email=request.user)
         serializer = UserSerializer(instance=user)
@@ -124,7 +133,13 @@ class TaskView(APIView):
                 return Response(serializer.data, status=200)
             serializer = TaskSerializer(instance=tasks, many=True)
             return Response(serializer.data,status=200)
-        return Response({'msg':'only developer can view tasks'},status=400)
+        if role == 'lead' or role == 'admin':
+            if project is not None:
+                tasks = Task.objects.filter(project_name = project)
+                serializer = TaskSerializer(instance=tasks, many=True)
+                return Response(serializer.data, status =200)
+            return Response({'error':'Please provide project name'})
+        return Response({'error':'something went wrong'},status=400)
     
     def post(self,request):
         user = User.objects.get(email=request.user)
