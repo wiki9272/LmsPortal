@@ -1,8 +1,8 @@
 from typing import Iterable
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import TaskSerializer, UserPasswordResetSerializer, PassResetEmailSerializer, RegisterSerializer, ProjectSerializer, LoginSerializer , UserSerializer , ChangePassSerializer
-from .models import User, Project, Task
+from .serializers import TaskSerializer, UserPasswordResetSerializer, PassResetEmailSerializer, RegisterSerializer, ProjectSerializer, LoginSerializer , UserSerializer , ChangePassSerializer, ClientSerializer
+from .models import User, Project, Task, Client
 from django.contrib.auth import authenticate
 from .permissions import IsActive
 from rest_framework.permissions import IsAuthenticated
@@ -161,4 +161,54 @@ class TaskView(APIView):
         task = Task.objects.get(id=param)
         task.delete()
         return Response({"message": "Task deleted successfully."}, status=204)
+        
+
+class ClientView(APIView):
+    def get(self, request):
+        email = request.GET.get('email')
+        if not email:
+            return Response({'msg': 'Email dena zaroori hai'}, status=400)
+
+        try:
+            user = Client.objects.get(email=email)
+            serializer = ClientSerializer(user)
+            return Response(serializer.data, status=200)
+        except Client.DoesNotExist:
+            return Response({'msg': 'No data found'}, status=404)
     
+    def post(self, request):
+        user = request.user
+        serializer = UserSerializer(data=user)
+        if serializer.is_valid():
+            role = serializer.data.get('role')
+            if role != 'lead':
+                return Response({'error': 'Only leads can create clients'}, status=400)
+            serializer = ClientSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'msg': 'Client created!', 'client': serializer.data}, status=201)
+        return Response({'error': serializer.errors}, status=400)
+    
+    # def patch(self,request):
+    #     user = User.objects.get(email=request.user)
+    #     serializer = UserSerializer(instance=user)
+    #     role = serializer.data.get('role')
+    #     if role == 'developer':
+    #         param = request.query_params.get('id')
+    #         if not param:
+    #             return Response({"message": "Please provide a task ID."}, status=400)
+    #         task = Task.objects.get(id=param)
+    #         serializer = TaskSerializer(instance=task,data=request.data,partial=True)
+    #         if serializer.is_valid():
+    #             serializer.save()
+    #             return Response(serializer.data,status=200)
+    #         return Response({'error':'data is not in valid format','details':serializer.errors},status=400)
+    #     return Response({'msg':'only developer can update task'},status=403)
+    
+    # def delete(self, request):
+    #     param = request.query_params.get("id")
+    #     if not param:
+    #         return Response({"message": "Please provide a task id."}, status=400)
+    #     task = Task.objects.get(id=param)
+    #     task.delete()
+    #     return Response({"message": "Task deleted successfully."}, status=204)
