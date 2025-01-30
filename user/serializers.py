@@ -105,12 +105,11 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = "__all__"
 
-    # def update(self, instance, validated_data):
-    #     instance.name = validated_data.get("name", instance.name)
-    #     instance.details = validated_data.get("details", instance.details)
-    #     instance.flag = validated_data.get("flag", instance.flag)
-    #     instance.isCompleted = validated_data.get("isCompleted", instance.isCompleted)
-    #     instance.time_to_complete = validated_data.get("time_to_complete", instance.time_to_complete)
-    #     instance.save()
-    #     return instance
+    def update(self, instance, validated_data):
+        time_taken = validated_data.get('time_taken', 0)  # Default to 0 if not provided
+        
+        # Add new time to the existing time
+        instance.time_taken += time_taken
+        instance.save()
+        return instance
     

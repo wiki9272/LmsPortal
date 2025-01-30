@@ -129,6 +129,7 @@ class Task(models.Model):
     details = models.TextField()
     flag = models.CharField(max_length=20, choices=FLAG_CHOICES, default='none')
     time_to_complete = models.DateTimeField(null=True, blank=True)
+    time_taken = models.IntegerField(default=0, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user', limit_choices_to={'role':'developer'})
     isCompleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
