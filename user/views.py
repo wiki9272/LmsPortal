@@ -2,7 +2,7 @@ from typing import Iterable
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import TaskSerializer, UserPasswordResetSerializer, PassResetEmailSerializer, RegisterSerializer, ProjectSerializer, LoginSerializer , UserSerializer , ChangePassSerializer
-from .models import User, Project, Task
+from .models import User, Project, Task, Client
 from django.contrib.auth import authenticate
 from .permissions import IsActive
 from rest_framework.permissions import IsAuthenticated
@@ -162,3 +162,19 @@ class TaskView(APIView):
         task.delete()
         return Response({"message": "Task deleted successfully."}, status=204)
     
+class AllDataView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        users = User.objects.all()
+        leads = users.filter(role='lead')
+        developers = users.filter(role='developer')
+        admins = users.filter(role='admin')
+        total_users = users.count()
+        total_admins = admins.count()
+        total_leads = leads.count()
+        total_dev = developers.count()
+        projects = Project.objects.all()
+        total_projects = projects.count()
+        clients = Client.objects.all()
+        total_clients = clients.count()
+        return Response({'total_users':total_users,'total_admins':total_admins,'total_leads':total_leads,'total_developers':total_dev,'total_projects':total_projects,'total_clients':total_clients},status=200)
