@@ -1,7 +1,7 @@
 from typing import Iterable
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import TaskSerializer, UserPasswordResetSerializer, PassResetEmailSerializer, RegisterSerializer, ProjectSerializer, LoginSerializer , UserSerializer , ChangePassSerializer
+from .serializers import TaskSerializer, UserPasswordResetSerializer, PassResetEmailSerializer, RegisterSerializer, ProjectSerializer, LoginSerializer , UserSerializer , ChangePassSerializer, ClientSerializer
 from .models import User, Project, Task, Client
 from django.contrib.auth import authenticate
 from .permissions import IsActive
@@ -117,6 +117,37 @@ class ProjectView(APIView):
                 return Response({'msg':'Project Created!','project':serializer.data},status=201)
             return Response({'error':serializer.errors},status=400)
         return Response({'error':'only lead can create project'}, status=400)
+    
+    def patch(self, request):
+        user = request.user
+        if user.role != 'lead':
+            return Response({'error': 'Only lead can update projects'}, status=403)
+        project_name = request.data.get('name', None)
+        if not project_name:
+            return Response({'error': 'Project name field is required'}, status=400)
+        try:
+            project = Project.objects.get(name=project_name)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found'}, status=404)
+        serializer = ProjectSerializer(project, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'Project updated!', 'project': serializer.data}, status=200)
+        return Response({'error': serializer.errors}, status=400)
+    
+    def delete(self, request):
+        user = request.user
+        if user.role != 'lead':
+            return Response({'error': 'Only lead can delete projects'}, status=403)
+        project_name = request.data.get('name', None)
+        if not project_name:
+            return Response({'error': 'Project name field is required'}, status=400)
+        try:
+            project = Project.objects.get(name=project_name)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found'}, status=404)
+        project.delete()
+        return Response({'msg': 'Project deleted successfully!'}, status=204)
 
 class TaskView(APIView):
     permission_classes = [IsAuthenticated]
@@ -176,7 +207,62 @@ class TaskView(APIView):
         task = Task.objects.get(id=param)
         task.delete()
         return Response({"message": "Task deleted successfully."}, status=204)
+        
+
+class ClientView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        email = request.query_params.get('email', None)
+        if email:
+            try:
+                client = Client.objects.get(email=email)
+                serializer = ClientSerializer(client)
+                return Response(serializer.data, status=200)
+            except Client.DoesNotExist:
+                return Response({'error': 'Client not found'}, status=404)
+        return Response({'error': 'Email parameter is required'}, status=400)
     
+    def post(self, request):
+        user = request.user
+        if not hasattr(user, 'role') or user.role != 'lead':
+            return Response({'msg': 'Only leads can create clients'}, status=403)
+        serializer = ClientSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'Client created!', 'client': serializer.data}, status=201)
+        return Response(serializer.errors, status=400)
+    
+    def patch(self, request):
+        user = request.user
+        if not hasattr(user, 'role') or user.role != 'lead':
+            return Response({'msg': 'Only leads can update clients'}, status=403)
+        email = request.data.get('email', None)
+        if not email:
+            return Response({'error': 'Email field is required'}, status=400)
+        try:
+            client = Client.objects.get(email=email)
+        except Client.DoesNotExist:
+            return Response({'error': 'Client not found'}, status=404)
+        serializer = ClientSerializer(client, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'Client updated!', 'client': serializer.data}, status=200)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request):
+        user = request.user
+        if not hasattr(user, 'role') or user.role != 'lead':
+            return Response({'msg': 'Only leads can delete clients'}, status=403)
+        email = request.data.get('email', None)
+        if not email:
+            return Response({'error': 'Email field is required'}, status=400)
+        try:
+            client = Client.objects.get(email=email)
+        except Client.DoesNotExist:
+            return Response({'error': 'Client not found'}, status=404)
+        client.delete()
+        return Response({'msg': 'Client deleted successfully!'}, status=204)
+     
 class AllDataView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):

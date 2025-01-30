@@ -97,7 +97,6 @@ class Client(models.Model):
         primary_key=True
     )
     details = models.TextField()
-
 class Project(models.Model):
     STATUS_CHOICES = (
         ('completed', 'Completed'),
