@@ -105,7 +105,16 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = "__all__"
 
+    def update(self, instance, validated_data):
+        time_taken = validated_data.get('time_taken', 0)  # Default to 0 if not provided
+        
+        # Add new time to the existing time
+        instance.time_taken += time_taken
+        instance.save()
+        return instance
+    
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = "__all__"
+    
