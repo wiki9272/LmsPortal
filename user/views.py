@@ -160,15 +160,23 @@ class TaskView(APIView):
             tasks = Task.objects.filter(user = request.user)
             if project is not None:
                 filteredTasks = tasks.filter(project_name=project)
+                completed_tasks = tasks.filter(project_name=project, flag = 'green')
+                pending_tasks = tasks.filter(project_name=project, flag = 'yellow')
+                completed_tasks = completed_tasks.count()
+                pending_tasks = pending_tasks.count()
                 serializer = TaskSerializer(instance=filteredTasks, many=True)
-                return Response(serializer.data, status=200)
+                return Response({'data':serializer.data, 'pending_tasks': pending_tasks, 'completed_tasks': completed_tasks}, status=200)
             serializer = TaskSerializer(instance=tasks, many=True)
             return Response(serializer.data,status=200)
         if role == 'lead' or role == 'admin':
             if project is not None:
                 tasks = Task.objects.filter(project_name = project)
+                completed_tasks = tasks.filter(project_name=project, flag = 'green')
+                pending_tasks = tasks.filter(project_name=project, flag = 'yellow')
+                completed_tasks = completed_tasks.count()
+                pending_tasks = pending_tasks.count()
                 serializer = TaskSerializer(instance=tasks, many=True)
-                return Response(serializer.data, status =200)
+                return Response({'data':serializer.data, 'pending_tasks': pending_tasks, 'completed_tasks': completed_tasks}, status=200)
             return Response({'error':'Please provide project name'})
         return Response({'error':'something went wrong'},status=400)
     
@@ -238,8 +246,8 @@ class ClientView(APIView):
     
     def patch(self, request):
         user = request.user
-        if not hasattr(user, 'role') or user.role != 'lead':
-            return Response({'msg': 'Only leads can update clients'}, status=403)
+        if not hasattr(user, 'role') or user.role == 'developer':
+            return Response({'msg': 'Only leads and Admins can update clients'}, status=403)
         email = request.data.get('email', None)
         if not email:
             return Response({'error': 'Email field is required'}, status=400)
@@ -255,8 +263,8 @@ class ClientView(APIView):
 
     def delete(self, request):
         user = request.user
-        if not hasattr(user, 'role') or user.role != 'lead':
-            return Response({'msg': 'Only leads can delete clients'}, status=403)
+        if not hasattr(user, 'role') or user.role == 'developer':
+            return Response({'msg': 'Only leads and Admins can delete clients'}, status=403)
         email = request.data.get('email', None)
         if not email:
             return Response({'error': 'Email field is required'}, status=400)
