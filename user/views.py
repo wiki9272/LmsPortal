@@ -220,6 +220,10 @@ class ClientView(APIView):
                 return Response(serializer.data, status=200)
             except Client.DoesNotExist:
                 return Response({'error': 'Client not found'}, status=404)
+        if not email:
+         clients = Client.objects.all()
+         serializer = ClientSerializer(instance=clients, many=True) 
+         return Response(serializer.data, status=200)        
         return Response({'error': 'Email parameter is required'}, status=400)
     
     def post(self, request):
