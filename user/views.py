@@ -293,3 +293,15 @@ class AllDataView(APIView):
         clients = Client.objects.all()
         total_clients = clients.count()
         return Response({'total_users':total_users,'total_admins':total_admins,'total_leads':total_leads,'total_developers':total_dev,'total_projects':total_projects,'total_clients':total_clients},status=200)
+
+class LeadDeveloperView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        user = request.user
+        if not hasattr(user, 'role') or user.role != 'admin':
+            return Response({'msg': 'Only Admins can create users'}, status=403)
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'User created!', 'user': serializer.data}, status=201)
+        return Response(serializer.errors, status=400)
