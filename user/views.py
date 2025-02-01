@@ -107,6 +107,7 @@ class ProjectView(APIView):
         return Response({'msg':'something went wrong','error':serializer.errors}, status=400)
     
     def post(self,request):
+        print(request.data)
         user = User.objects.get(email=request.user)
         serializer = UserSerializer(instance=user)
         role = serializer.data.get('role')
@@ -201,6 +202,7 @@ class TaskView(APIView):
             if not param:
                 return Response({"message": "Please provide a task ID."}, status=400)
             task = Task.objects.get(id=param)
+            task.time_taken += request.data.get('time_taken',0)
             serializer = TaskSerializer(instance=task,data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -236,8 +238,8 @@ class ClientView(APIView):
     
     def post(self, request):
         user = request.user
-        if not hasattr(user, 'role') or user.role != 'lead':
-            return Response({'msg': 'Only leads can create clients'}, status=403)
+        if not hasattr(user, 'role') or user.role == 'developer':
+            return Response({'msg': 'Only leads and Admins can create clients'}, status=403)
         serializer = ClientSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
