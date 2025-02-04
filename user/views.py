@@ -107,7 +107,6 @@ class ProjectView(APIView):
         return Response({'msg':'something went wrong','error':serializer.errors}, status=400)
     
     def post(self,request):
-        print(request.data)
         user = User.objects.get(email=request.user)
         serializer = UserSerializer(instance=user)
         role = serializer.data.get('role')
@@ -305,3 +304,34 @@ class LeadDeveloperView(APIView):
             serializer.save()
             return Response({'msg': 'User created!', 'user': serializer.data}, status=201)
         return Response(serializer.errors, status=400)
+    
+    def patch(self, request):
+        user = request.user
+        if not hasattr(user, 'role') or user.role != 'admin':
+            return Response({'msg': 'Only Admins can update users'}, status=403)
+        email = request.data.get('email', None)
+        if not email:
+            return Response({'error': 'Email field is required'}, status=400)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'users not found'}, status=404)
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'User updated!', 'user': serializer.data}, status=200)
+        return Response(serializer.errors, status=400)
+    
+    def delete(self, request):
+        user = request.user
+        if not hasattr(user, 'role') or user.role != 'admin':
+            return Response({'msg': 'Only Admins can delete users'}, status=403)
+        email = request.data.get('email', None)
+        if not email:
+            return Response({'error': 'Email field is required'}, status=400)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        user.delete()
+        return Response({'msg': 'User deleted successfully!'}, status=204)
