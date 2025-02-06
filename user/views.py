@@ -297,14 +297,13 @@ class LeadDeveloperView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-        if user.role != 'admin':
-            return Response({'error': 'Only admins can access this data'}, status=403)
+        if request.user.role not in ['admin', 'lead']:
+            return Response({'error': 'Only admin and lead can access this data'}, status=403)
         leads = User.objects.filter(role='lead')
         developers = User.objects.filter(role='developer')
         leads_data = UserSerializer(leads, many=True).data
         developers_data = UserSerializer(developers, many=True).data
-        return Response({'leads': leads_data,'developers': developers_data}, status=200)
+        return Response({'total_leads': len(leads_data), 'total_developers': len(developers_data), 'leads': leads_data, 'developers': developers_data}, status=200)
     
     def post(self, request):
         user = request.user
